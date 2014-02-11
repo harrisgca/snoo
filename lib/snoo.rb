@@ -1,5 +1,4 @@
 require "snoo/version"
 
-module Snoo
-  # Your code goes here...
-end
+require 'snoo/request'
+require 'snoo/client'
