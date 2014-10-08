@@ -10,14 +10,25 @@ module Snoo
     # @param password [String] The password of the reddit account
     # @return [HTTParty::Response] The httparty request object.
     def log_in username, password
-      login = post("/api/login", :body => {user: username, passwd: password, api_type: 'json'})
-      errors = login['json']['errors']
-      raise errors[0][1] unless errors.size == 0
-      set_cookies login.headers['set-cookie']
-      @modhash = login['json']['data']['modhash']
-      @username = username
-      @userid = 't2_' + get('/api/me.json')['data']['id']
-      return login
+      begin
+        login = post("/api/login", :body => {user: username, passwd: password, api_type: 'json'})
+        errors = login['json']['errors']
+        raise errors[0][1] unless errors.size == 0
+        set_cookies login.headers['set-cookie']
+        @modhash = login['json']['data']['modhash']
+        @username = username
+        @userid = 't2_' + get('/api/me.json')['data']['id']
+        return login
+      rescue
+        login = post("/api/login", :body => {user: username, passwd: password, api_type: 'json'})
+        errors = login['json']['errors']
+        raise errors[0][1] unless errors.size == 0
+        set_cookies login.headers['set-cookie']
+        @modhash = login['json']['data']['modhash']
+        @username = username
+        @userid = 't2_' + get('/api/me.json')['data']['id']
+        return login
+      end
     end
 
     # Auth into reddit via modhash and cookie. This has the advantage of not throttling you if you call it a lot
