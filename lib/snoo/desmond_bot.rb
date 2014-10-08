@@ -1,29 +1,47 @@
-#First steps
-#login as bot to reddit -DONE
-#subscribe to r/nba - DONE
-#get targeted posts
-##send that post via PM to my account
 
-#Things to Add
-#Hook this up to a SQLite database to save the post id to avoid sending duplicates in case of program termination
-#setup a cron job to run the script every X minutes
-#setup a cron job to open the terminal and execute script when computer starts
-
-# *Can we login? YES
-# *Can we subscribe to r/nba? YES
-# *Can we send a PM? If so, why not? Do we need flair? Do we get a captcha warning? NO, KARMA, YES
-# *How do I execute my script within the boundaries of this program?
 module Snoo
 
 	module DesmondBot
 
+		def kobe_title_search
+			most_recent_posts = get_new_listings(subreddit:'nba', limit:10)
+			relevant_listings = most_recent_posts['data']['children']
+			relevant_listings.each do |listing|
+				if listing['data']['title'].downcase.include?("kobe") || listing['data']['selftext'].downcase.include?("kobe")
+					if @notified.include?(listing['data']['id'])
+						return "No new posts were found"
+					else
+						message_body = "Title: #{listing['data']['title']}, Link: http://www.reddit.com#{listing['data']['permalink']}"
+						self.send_pm(@owner, "New Kobe Post", message_body)
+						@notified << listing['data']['id']
+						return "New listings! Message(s) sent"
+					end #end nested if
+				else
+					return "No matching posts found"
+				end #end if statement
+			end #end each block
+			
+		end #end kobe_title_search method
+
+		#options that can be passed are subreddit name and limit for number of listings returned
+		def get_new_listings opts = {}
+		  # Build the basic url
+		  if opts[:subreddit]
+		  	url = '/r/' + opts[:subreddit] + '/new/.json'
+		  else
+		  	url = "/new/.json"
+		  end
+		  #limit option passed? if not just send empty hash
+		  opts[:limit] ? query = {limit:opts[:limit]} : query = {}
+		  get(url, query: query)
+		end
+
 		def subscribe(subreddit)
 			logged_in?
-			subreddit = subreddit.downcase
 
 			#see the subreddit_info method in subreddits.rb
 			subreddit_json = self.subreddit_info(subreddit)
-			subreddit_id = "#{subreddit_json['kind']}_#{subreddit_json['data']['id']}"
+			subreddit_id = subreddit_json['kind'] + "_" + subreddit_json['data']['id']
 			
 			server_response = self.class.post('/api/subscribe.json',
 				body:{uh:@modhash, action:'sub', sr: subreddit_id, api_type:'json'})
@@ -33,7 +51,6 @@ module Snoo
 
 		def unsubscribe(subreddit)
 			logged_in?
-			subreddit = subreddit.downcase
 
 			#see the subreddit_info method in subreddits.rb
 			subreddit_json = self.subreddit_info(subreddit)

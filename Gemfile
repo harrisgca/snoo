@@ -1,4 +1,4 @@
 source 'https://rubygems.org'
-
-# Specify your gem's dependencies in snoo.gemspec
-gemspec
+gem 'nokogiri'
+gem 'httparty'
+gem 'data_mapper'

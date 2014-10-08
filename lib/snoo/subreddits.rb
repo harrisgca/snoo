@@ -74,24 +74,26 @@ module Snoo
       post('/api/subreddit_stylesheet', body: {op: 'save', r: subreddit, stylesheet_contents: stylesheet, uh: @modhash, api_type: 'json'})
     end
 
+    ###The legacy subscribe and unsubscribe methods no longer function with the current Reddit API
+    
     # Subscribe to a subreddit
     #
     # @param (see #delete_header)
     # @param action [sub, unsub] Subscribe or unsubscribe
     # @return (see #clear_sessions)
-    def subscribe subreddit, action = "sub"
-      logged_in?
-      post('/api/subscribe', body: {action: action, sr: subreddit, uh: @modhash, api_type: 'json'})
-    end
+    # def subscribe subreddit, action = "sub"
+    #   logged_in?
+    #   post('/api/subscribe', body: {action: action, sr: subreddit, uh: @modhash, api_type: 'json'})
+    # end
 
-    # Unsubscribe from a subreddit
-    # This is an alias for `subscribe "unsub"`
-    #
-    # @param (see #delete_header)
-    # @return (see #clear_sessions)
-    def unsubscribe subreddit
-      subscribe("unsub", subreddit)
-    end
+    # # Unsubscribe from a subreddit
+    # # This is an alias for `subscribe "unsub"`
+    # #
+    # # @param (see #delete_header)
+    # # @return (see #clear_sessions)
+    # def unsubscribe subreddit
+    #   subscribe("unsub", subreddit)
+    # end
 
 
     # Get subreddit info

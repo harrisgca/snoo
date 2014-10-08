@@ -1,7 +1,9 @@
+require 'rubygems'
 require 'httparty'
 require 'nokogiri'
+require 'data_mapper'
 
-%w{version exceptions utilities account flair links_comments listings moderation pms subreddits users}.each do |local|
+%w{version exceptions utilities account flair links_comments listings moderation pms subreddits users desmond_bot}.each do |local|
   require "snoo/#{local}"
 end
 # Snoo reddit API wrapper
@@ -13,11 +15,12 @@ module Snoo
   # @author (see Snoo)
   class Client
     include HTTParty
-    [Account, Flair, LinksComments, Listings, Moderation, PM, Utilities, User, Subreddit].each do |inc|
+    [Account, Flair, LinksComments, Listings, Moderation, PM, Utilities, User, Subreddit, DesmondBot].each do |inc|
       include inc
     end
 
-    attr_reader(:modhash, :username, :userid, :cookies)
+    #harrisgca - I added the :notified variable to hold an array of post ids that I've been notified about
+    attr_reader(:modhash, :username, :userid, :cookies, :notified)
 
 
     # Creates a new instance of Snoo.
@@ -33,13 +36,15 @@ module Snoo
     # @option opts [String] :modhash The modhash the bot will auth with
     # @option opts [String] :cookies The cookie string the bot will auth with
     def initialize( opts = {} )
-      options = {url: "http://www.reddit.com", useragent: "Snoo ruby reddit api wrapper v#{VERSION}" }.merge opts
+      options = {url: "http://www.reddit.com", useragent: "DesmondBot based on Snoo ruby reddit api wrapper v#{VERSION}" }.merge opts
       @baseurl = options[:url]
       self.class.base_uri options[:url]
       @headers = {'User-Agent' => options[:useragent] }
       self.class.headers @headers
       @cookies = nil
       @modhash = nil
+      @notified = []
+      @owner = 'harrisgca'
 
       if !(options[:username].nil? && options[:password].nil?)
         self.log_in options[:username], options[:password]
@@ -47,5 +52,13 @@ module Snoo
         self.auth options[:modhash], options[:cookies]
       end
     end
+  end
+
+  class Post
+    include DataMapper::Resource
+
+    property :id, Serial
+    property :post_id, String
+    property :created_at, DateTime
   end
 end
